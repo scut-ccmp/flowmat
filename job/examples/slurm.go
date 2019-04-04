@@ -39,41 +39,43 @@ func main() {
 	}
 
 	// send files
-	err = job.SendFiles(client, wd, pathname)
+	// bugs need execute mod
+	err = job.SendFiles(conn.Client, wd, pathname)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// execute slurm job
-	// sess, err := conn.NewSession()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer sess.Close()
-	//
+	sess := conn.Session
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sess.Close()
+
 	// sess.Stdout = os.Stdout
 	// sess.Stderr = os.Stderr
-	//
-	// // Start remote shell
-	// // cmd := "cd " + pathname + "; module load vasp/5.4.4-impi-mkl; mpirun -n 4 vasp_std;"
-	// cmd := "cd " + pathname + ";sbatch job.sh"
- 	// err = sess.Run(cmd)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	c := 0
-	Run(func() (done bool) {
-		time.Sleep(2 * time.Second)
-		fmt.Println("doing")
-		c++
-		if c > 2 {
-			return true
-		}
-		return false
-	})
+
+	// Start remote shell
+	// cmd := "cd " + pathname + "; module load vasp/5.4.4-impi-mkl; mpirun -n 4 vasp_std;"
+	cmd := "cd " + pathname + ";sbatch job.sh"
+ 	out, err := sess.Output(cmd)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(out))
+	// c := 0
+	// Run(func() (done bool) {
+	// 	time.Sleep(2 * time.Second)
+	// 	fmt.Println("doing")
+	// 	c++
+	// 	if c > 2 {
+	// 		return true
+	// 	}
+	// 	return false
+	// })
 
 	// recive files
-	err = job.ReciveFiles(client, pathname, wd)
+	err = job.ReciveFiles(conn.Client, pathname, wd)
 	if err != nil {
 		log.Fatal(err)
 	}
