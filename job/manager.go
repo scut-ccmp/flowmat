@@ -7,7 +7,7 @@ type Manager interface{
 
 func JobManager(name string) Manager {
   table := map[string]Manager {
-    "slurm": NewSlurmMgt,
+    "slurm": NewSlurmMgt(),
   }
   return table[name]
 }

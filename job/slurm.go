@@ -8,8 +8,8 @@ import (
 
 type SlurmMgt struct {}
 
-func NewSlurmMgt() {
-	return &SlurmMgt{}
+func NewSlurmMgt() SlurmMgt {
+	return SlurmMgt{}
 }
 
 
