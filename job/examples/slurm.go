@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"time"
-	"fmt"
 
 	"github.com/scut-ccmp/flowmat/job"
 )
@@ -52,41 +50,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	Check(func() (done bool) {
-		state, err := jobMgt.FindJobState(conn, jobID)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(state)
-		if state == "NOJOBFOUND" {
-			return true
-		}
-		return false
-	})
+	job.Check(jobMgt.CheckDoneFunc, conn, jobID)
 
 	// recive files
 	err = job.ReciveFiles(conn.Client, pathname, wd)
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-
-func Check(proc func() bool) {
-	timeout := time.After(10000 * time.Second)
-	tick := time.Tick(5 * time.Second)
-
-	for {
-		select {
-		case <- timeout:
-			fmt.Println("timeout!")
-			return
-		case <- tick:
-			done := proc()
-			if done {
-				fmt.Println("DONE")
-				return
-			}
-		}
 	}
 }

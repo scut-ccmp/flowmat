@@ -74,3 +74,15 @@ func (m SlurmMgt) SubmitJob(conn *Conn, path string) (id int, err error) {
 	id = m.parseJobID(output)
 	return id, nil
 }
+
+func (m SlurmMgt) CheckDoneFunc(conn *Conn, id int) (done bool, err error) {
+		state, err := m.FindJobState(conn, id)
+		if err != nil {
+			return true, fmt.Errorf("CheckDoneFunc: %v", err)
+		}
+		fmt.Println(state)
+		if state == "NOJOBFOUND" {
+			return true, nil
+		}
+		return false, nil
+}
