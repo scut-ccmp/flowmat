@@ -45,34 +45,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// execute slurm job
-	sess := conn.Session
+	// submit job
+	jobID, err := job.SubmitJob(conn, pathname)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer sess.Close()
 
-	// sess.Stdout = os.Stdout
-	// sess.Stderr = os.Stderr
-
-	// Start remote shell
-	// cmd := "cd " + pathname + "; module load vasp/5.4.4-impi-mkl; mpirun -n 4 vasp_std;"
-	cmd := "cd " + pathname + ";sbatch job.sh"
- 	out, err := sess.Output(cmd)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(out))
-	// c := 0
-	// Run(func() (done bool) {
-	// 	time.Sleep(2 * time.Second)
-	// 	fmt.Println("doing")
-	// 	c++
-	// 	if c > 2 {
-	// 		return true
-	// 	}
-	// 	return false
-	// })
+	Check(func() (done bool) {
+		state, err := job.FindJobState(conn, jobID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(state)
+		if state == "NOJOBFOUND" {
+			return true
+		}
+		return false
+	})
 
 	// recive files
 	err = job.ReciveFiles(conn.Client, pathname, wd)
@@ -82,9 +71,9 @@ func main() {
 }
 
 
-func Run(proc func() bool) {
-	timeout := time.After(10 * time.Second)
-	tick := time.Tick(500 * time.Millisecond)
+func Check(proc func() bool) {
+	timeout := time.After(10000 * time.Second)
+	tick := time.Tick(5 * time.Second)
 
 	for {
 		select {

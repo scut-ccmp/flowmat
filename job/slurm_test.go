@@ -1,0 +1,38 @@
+package job
+
+import (
+  "testing"
+)
+
+func TestparseJobID(t *testing.T) {
+  tests := []struct {
+    in []byte
+    expected int
+  }{
+    {[]byte(`Submitted batch job 54264`), 54264},
+    {[]byte(`Submitted batch job 99999`), 99999},
+  }
+
+  for _, test := range tests {
+    if got := parseJobID(test.in); got != test.expected {
+      t.Errorf("FindJobID(%s) got %d", string(test.in), got)
+    }
+  }
+}
+
+func TestParseJobState(t *testing.T) {
+  tests := []struct {
+    in []byte
+    expected string
+  }{
+    {[]byte(`STATE COMPLETING`), "COMPLETING"},
+    {[]byte(`STATE RUNNING`), "RUNNING"},
+    {[]byte(`STATE`), "COMPLETING"},
+    {[]byte(`slurm_load_jobs error: Invalid job id specified`), "NOJOBFOUND"},
+  }
+  for _, test := range tests {
+    if got, _ := parseJobState(test.in); got != test.expected {
+      t.Errorf("JobState(%s) got %s", string(test.in), got)
+    }
+  }
+}
