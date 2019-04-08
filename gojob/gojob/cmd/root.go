@@ -23,6 +23,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -33,7 +34,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "a",
+	Use:   "gojob",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -45,6 +46,41 @@ to quickly create a Cobra application.`,
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
 }
+
+var cmdConf = &cobra.Command{
+	Use: "conf",
+	Short: "",
+	Long: "",
+}
+
+var cmdRun = &cobra.Command{
+	Use: "run",
+	Short: "",
+	Long: "",
+}
+
+var cmdVasp = &cobra.Command{
+	Use: "vasp",
+	Short: "",
+	Long: "",
+	Run: func(cmd *cobra.Command, args []string) {
+		user := viper.GetString("server.user")
+		pass := viper.GetString("server.password")
+		host := viper.GetString("server.host")
+		port := viper.GetString("server.port")
+
+		dir := viper.GetString("file.tempDir")
+		prefix := viper.GetString("file.dirPrefix")
+		RunVasp(host, port, user, pass, dir, prefix)
+	},
+}
+
+var cmdQe = &cobra.Command{
+	Use: "qe",
+	Short: "",
+	Long: "",
+}
+
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -66,6 +102,9 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	rootCmd.AddCommand(cmdConf, cmdRun)
+	cmdRun.AddCommand(cmdVasp, cmdQe)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -82,8 +121,8 @@ func initConfig() {
 		}
 
 		// Search config in home directory with name ".a" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".a")
+		viper.AddConfigPath(path.Join(home, ".config", "gojob"))
+		viper.SetConfigName("config")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

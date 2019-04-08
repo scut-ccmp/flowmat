@@ -43,8 +43,8 @@ func main() {
 	host := viper.GetString("server.host")
 	port := viper.GetString("server.port")
 
-	dir := viper.GetString("server.tempDir")
-	prefix := viper.GetString("server.dirPrefix")
+	dir := viper.GetString("file.tempDir")
+	prefix := viper.GetString("file.dirPrefix")
 
 	// get host public key
 	// hostKey := getHostKey(host)
