@@ -45,14 +45,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	jobMgt := job.JobManager("slurm")
 	// submit job
-	jobID, err := job.SubmitJob(conn, pathname)
+	jobID, err := jobMgt.SubmitJob(conn, pathname)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	Check(func() (done bool) {
-		state, err := job.FindJobState(conn, jobID)
+		state, err := jobMgt.FindJobState(conn, jobID)
 		if err != nil {
 			log.Fatal(err)
 		}
