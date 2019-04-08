@@ -11,7 +11,6 @@ import (
 type Conn struct {
 	Connect *ssh.Client
 	Client	*sftp.Client
-	Session *ssh.Session
 }
 
 func NewConnect(user, password, host, port string) (*Conn, error) {
@@ -41,22 +40,24 @@ func NewConnect(user, password, host, port string) (*Conn, error) {
 		return nil, fmt.Errorf("job: sftp client %v", err)
 	}
 
-	session, err := sshConn.NewSession()
-	if err != nil {
-		return nil, fmt.Errorf("job: ssh newsession %v", err)
-	}
-
 	conn := &Conn{
 		Connect: sshConn,
 		Client: client,
-		Session: session,
 	}
 
 	return conn, nil
 }
 
+func (c *Conn) Session() (*ssh.Session, error) {
+	conn := c.Connect
+	session, err := conn.NewSession()
+	if err != nil {
+		return nil, fmt.Errorf("new session %v", err)
+	}
+	return session, nil
+}
+
 func (c *Conn) Close() {
 	c.Client.Close()
-	c.Session.Close()
 	c.Connect.Close()
 }
