@@ -3,40 +3,22 @@ package main
 import (
 	"log"
 	"os"
-	// "fmt"
-	"bytes"
+	"fmt"
+	"text/template"
 
 	"github.com/scut-ccmp/flowmat/gojob"
 	"github.com/spf13/viper"
 )
 
-
 func main() {
-
-	var tomlExample = []byte(`
-{
-	"server": {
-		"host": "202.38.220.15",
-		"port": "22",
-		"user": "unkcpz",
-		"password": "sunshine"
-	},
-	"file": {
-		"tempDir": "/home/unkcpz/giida",
-		"dirPrefix": "tmp"
-	}
-}
-	`)
-
 	viper.SetConfigName("config")
 	viper.AddConfigPath("$HOME/.config/gojob/")
 	viper.AddConfigPath(".")
 	viper.SetConfigType("json")
-	// err := viper.ReadInConfig()
-	viper.ReadConfig(bytes.NewBuffer(tomlExample))
-	// if err != nil { // Handle errors reading the config file
-	// 	panic(fmt.Errorf("Fatal error config file: %s \n", err))
-	// }
+	err := viper.ReadInConfig()
+	if err != nil { // Handle errors reading the config file
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 
 	user := viper.GetString("server.user")
 	pass := viper.GetString("server.password")
@@ -45,9 +27,6 @@ func main() {
 
 	dir := viper.GetString("file.tempDir")
 	prefix := viper.GetString("file.dirPrefix")
-
-	// get host public key
-	// hostKey := getHostKey(host)
 
 	conn, err := gojob.NewConnect(user, pass, host, port)
 	if err != nil {
@@ -63,6 +42,34 @@ func main() {
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// prepare _job.sh file
+	slurm := gojob.SlurmParameter{
+		Name: "flowmat",
+		NProc: viper.GetString("job.nproc"),
+		NCom: viper.GetString("job.ncom"),
+		Partion: viper.GetString("job.partion"),
+		Prepend: viper.GetString("job.prepend"),
+		ExecCmd: viper.GetString("job.exec"),
+	}
+
+	t, err := template.New("slurm job").Parse(gojob.SlurmTmpl)
+	if err != nil {
+		log.Fatal("Parse tmpl: ", err)
+		return
+	}
+
+	f, err := os.Create("_job.sh")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	err = t.Execute(f, slurm)
+	if err != nil {
+		log.Fatal(err)
+		return
 	}
 
 	// send files

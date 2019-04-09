@@ -6,6 +6,16 @@ import (
 	"fmt"
 )
 
+type SlurmParameter struct {
+	Name string
+	NProc string
+	NCom string
+	Partion string
+	Prepend string
+	ExecCmd string
+	Append string
+}
+
 type SlurmMgt struct {}
 
 func NewSlurmMgt() SlurmMgt {
@@ -61,7 +71,7 @@ func (m SlurmMgt) parseJobID(s []byte) (id int) {
 }
 
 func (m SlurmMgt) SubmitJob(conn *Conn, path string) (id int, err error) {
-	cmd := "cd " + path + ";sbatch job.sh"
+	cmd := "cd " + path + ";sbatch _job.sh" 
 	sess, err := conn.Session()
 	if err != nil {
 		return -1, fmt.Errorf("submit job: new sess: %v", err)
