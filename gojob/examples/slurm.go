@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"fmt"
 	"text/template"
 
 	"github.com/scut-ccmp/flowmat/gojob"
@@ -11,13 +10,15 @@ import (
 )
 
 func main() {
+	gojob.InitLogInfo()
+
 	viper.SetConfigName("config")
 	viper.AddConfigPath("$HOME/.config/gojob/")
 	viper.AddConfigPath(".")
 	viper.SetConfigType("json")
 	err := viper.ReadInConfig()
 	if err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		log.Fatalf("viper.ReadInConifg: %v", err)
 	}
 
 	user := viper.GetString("server.user")
@@ -30,18 +31,18 @@ func main() {
 
 	conn, err := gojob.NewConnect(user, pass, host, port)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("gojob.NewConnect: %v", err)
 	}
 	defer conn.Close()
 
 	pathname, err := gojob.TempDir(conn.Client, dir, prefix)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("gojob.TempDir: %v", err)
 	}
 
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("os.Getwd: %v", err)
 	}
 
 	// prepare _job.sh file
@@ -56,13 +57,13 @@ func main() {
 
 	t, err := template.New("slurm job").Parse(gojob.SlurmTmpl)
 	if err != nil {
-		log.Fatal("Parse tmpl: ", err)
+		log.Fatalf("Parse tmpl: %v", err)
 		return
 	}
 
 	f, err := os.Create("_job.sh")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("os.Create: %v", err)
 		return
 	}
 
@@ -76,14 +77,14 @@ func main() {
 	// bugs need execute mod
 	err = gojob.SendFiles(conn.Client, wd, pathname)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("gojob.SendFiles: %v", err)
 	}
 
 	jobMgt := gojob.JobManager("slurm")
 	// submit job
 	jobID, err := jobMgt.SubmitJob(conn, pathname)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("submit job: %v", err)
 	}
 
 	gojob.Check(jobMgt.CheckDoneFunc, conn, jobID)
@@ -91,6 +92,6 @@ func main() {
 	// recive files
 	err = gojob.ReciveFiles(conn.Client, pathname, wd)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("gojob.ReciveFiles: %v", err)
 	}
 }

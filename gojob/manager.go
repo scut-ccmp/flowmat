@@ -22,16 +22,39 @@ func Check(f func(*Conn, int) (bool, error), conn *Conn, id int) {
 	timeout := time.After(10000 * time.Second)
 	tick := time.Tick(5 * time.Second)
 
+	ch := make(chan bool)
+	go spinner(ch)
 	for {
 		select {
 		case <- timeout:
-			fmt.Println("timeout!")
+			Error.Println("timeout!")
 			return
 		case <- tick:
-			done, _ := f(conn, id)
+			done, err := f(conn, id)
+			if err != nil {
+				c := conn.Connect.Conn
+				// cInfo := c.ConnMetadata
+				Error.Printf("Check process state error, conn: %v, id: %d", c, id)
+			}
 			if done {
-				fmt.Println("DONE")
+				ch <- true
+				Info.Println("Remote Job DONE")
 				return
+			}
+		}
+	}
+}
+
+func spinner(done chan bool) {
+	for {
+		select {
+		case <-done:
+			fmt.Printf("\n")
+			return
+		default:
+			for _, r := range `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏` {
+				fmt.Printf("\r%c", r)
+				time.Sleep(100 * time.Millisecond)
 			}
 		}
 	}

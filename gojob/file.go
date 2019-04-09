@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	"io"
-	"fmt"
 	"path"
 
 	"github.com/pkg/sftp"
@@ -67,6 +66,7 @@ func SendFiles(client *sftp.Client, fromDir, toDir string) error {
 	if err != nil {
 		return err
 	}
+	Trace.Printf("Start send following files:\n")
 	for _, f := range files {
 		// create source file
 		srcFile, err := os.Open(path.Join(fromDir, f.Name()))
@@ -86,8 +86,9 @@ func SendFiles(client *sftp.Client, fromDir, toDir string) error {
 		if err != nil {
 			return err
 		}
-		// fmt.Printf("%s: %d bytes copied\n", f.Name(), bytes)
+		Trace.Printf("%s: %d bytes copied\n", f.Name(), bytes)
 	}
+	Info.Printf("Finished send files\n")
 	return nil
 }
 
@@ -97,6 +98,7 @@ func ReciveFiles(client *sftp.Client, fromDir, toDir string) error {
 	if err != nil {
 		return err
 	}
+	Trace.Printf("Start recive following files:\n")
 	for _, f := range files {
 		// create destination file
 		var dstFile *os.File
@@ -118,7 +120,7 @@ func ReciveFiles(client *sftp.Client, fromDir, toDir string) error {
 		if err != nil {
 			return err
 		}
-		// fmt.Printf("%d bytes copied\n", bytes)
+		Trace.Printf("%d bytes copied\n", bytes)
 
 		// flush in-memory copy
 		err = dstFile.Sync()
@@ -126,5 +128,6 @@ func ReciveFiles(client *sftp.Client, fromDir, toDir string) error {
 			return err
 		}
 	}
+	Info.Printf("Finished recive files\n")
 	return nil
 }
