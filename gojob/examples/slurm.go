@@ -108,7 +108,7 @@ func spinner(done chan bool) {
 			fmt.Printf("\n")
 			return
 		default:
-			fmt.Printf("Running remote job: ")
+			fmt.Printf(" <- Running remote job")
 			for _, r := range `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏` {
 				fmt.Printf("\r%c", r)
 				time.Sleep(100 * time.Millisecond)
