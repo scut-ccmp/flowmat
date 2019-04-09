@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"os"
+	"fmt"
+	"time"
 	"text/template"
 
 	"github.com/scut-ccmp/flowmat/gojob"
@@ -87,11 +89,30 @@ func main() {
 		log.Fatalf("submit job: %v", err)
 	}
 
+	ch := make(chan bool)
+	go spinner(ch)
 	gojob.Check(jobMgt.CheckDoneFunc, conn, jobID)
+	ch <- true
 
 	// recive files
 	err = gojob.ReciveFiles(conn.Client, pathname, wd)
 	if err != nil {
 		log.Fatalf("gojob.ReciveFiles: %v", err)
+	}
+}
+
+func spinner(done chan bool) {
+	for {
+		select {
+		case <-done:
+			fmt.Printf("\n")
+			return
+		default:
+			fmt.Printf("Running remote job: ")
+			for _, r := range `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏` {
+				fmt.Printf("\r%c", r)
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
 	}
 }

@@ -2,7 +2,6 @@ package gojob
 
 import (
 	"time"
-	"fmt"
 )
 
 type Manager interface{
@@ -22,8 +21,6 @@ func Check(f func(*Conn, int) (bool, error), conn *Conn, id int) {
 	timeout := time.After(10000 * time.Second)
 	tick := time.Tick(5 * time.Second)
 
-	ch := make(chan bool)
-	go spinner(ch)
 	for {
 		select {
 		case <- timeout:
@@ -37,24 +34,8 @@ func Check(f func(*Conn, int) (bool, error), conn *Conn, id int) {
 				Error.Printf("Check process state error, conn: %v, id: %d", c, id)
 			}
 			if done {
-				ch <- true
 				Info.Println("Remote Job DONE")
 				return
-			}
-		}
-	}
-}
-
-func spinner(done chan bool) {
-	for {
-		select {
-		case <-done:
-			fmt.Printf("\n")
-			return
-		default:
-			for _, r := range `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏` {
-				fmt.Printf("\r%c", r)
-				time.Sleep(100 * time.Millisecond)
 			}
 		}
 	}
