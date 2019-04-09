@@ -86,7 +86,7 @@ func SendFiles(client *sftp.Client, fromDir, toDir string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s: %d bytes copied\n", f.Name(), bytes)
+		// fmt.Printf("%s: %d bytes copied\n", f.Name(), bytes)
 	}
 	return nil
 }
@@ -118,7 +118,7 @@ func ReciveFiles(client *sftp.Client, fromDir, toDir string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%d bytes copied\n", bytes)
+		// fmt.Printf("%d bytes copied\n", bytes)
 
 		// flush in-memory copy
 		err = dstFile.Sync()
